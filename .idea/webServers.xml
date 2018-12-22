@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="8222ae67-b20e-4deb-8cb0-71318800f582" name="PythonAnywhere" url="http://ssh.pythonanywhere.com">
+        <fileTransfer host="ssh.pythonanywhere.com" port="22" rootFolder="/home/mowhamadrexa/Study" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

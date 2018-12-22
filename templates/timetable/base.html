@@ -1,0 +1,234 @@
+{% load static %}
+{% load space_to_dash %}
+{% load hour_to_min %}
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="{% static "images/favicon.png" %}">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" rel="stylesheet">
+    <link rel="stylesheet" href={% static "css/reset.css" %}> <!-- CSS reset -->
+    <link rel="stylesheet" href={% static "css/style.css" %}> <!-- Resource style -->
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+
+    <title>My Study Schedule</title>
+    <style>
+        {% if courses %}
+            {% for course in courses %}
+                .cd-schedule .single-event[data-event="{{ course.name|space_to_dash }}"],
+                .cd-schedule [data-event="{{ course.name|space_to_dash }}"] .header-bg {
+                    /* this is used to set a background color for the event and the modal window */
+                    background: {{ course.color }};
+                }
+
+                .cd-schedule .single-event[data-event="{{ course.name|space_to_dash }}"]:hover {
+                    background: #151515;
+                }
+
+            {% endfor %}
+        {% endif %}
+
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 75%;
+            }
+        }
+
+        @media only screen and (min-width: 800px) {
+            .cd-schedule .events .events-group > ul {
+                height: {{ table_height }}px;
+                /* reset style */
+                display: block;
+                overflow: visible;
+                padding: 0;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container" style="padding-top: 50px">
+    <ul class="nav nav-pills">
+        <li role="presentation" class="disabled"><a href="/">Time-table</a></li>
+        <li role="presentation" class=""><a href="/admin/timetable/studyhour/add/">Add Time</a></li>
+        <li role="presentation" class=""><a href="/admin/timetable/course/add/">Add course</a></li>
+    </ul>
+    {#<div class="justify-content-center align-items-center">#}
+    {#    {% if from_date and to_date %}#}
+    {#        <h4>{{ from_date|date:"m-d" }}  to  {{ to_date|date:"m-d" }}</h4>#}
+    {#    {% endif %}#}
+    {#</div>#}
+
+</div>
+
+
+<div class="cd-schedule loading">
+    <div class="timeline">
+        <ul>
+            {% for clock in clock_range %}
+                {% if clock != 24 %}
+                    <li><span>{{ clock }} : 00</span></li>
+                    <li><span>{{ clock }} : 30</span></li>
+                {% else %}
+                    <li><span>{{ clock }} : 00</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div> <!-- .timeline -->
+
+    <div class="events">
+        <ul>
+            {% for day, key in week_days %}
+                <li class="events-group">
+                    <div class="top-info"><span>{{ day }}</span></div>
+
+                    <ul>
+                        {% if events %}
+                            {% for event in events %}
+                                {% if event.start_time|date:"D" == key or event.end_time|date:"D" == key %}
+                                    {% if event.start_time|date:"Y-m-d" == event.end_time|date:"Y-m-d" %}
+                                        <li class="single-event" data-start="{{ event.start_time|time:"H:i" }}"
+                                            data-end="{{ event.end_time|time:"H:i" }}"
+                                            data-content="event-abs-circuit"
+                                            data-event="{{ event.course_name.name|space_to_dash }}">
+                                            <a href="#0">
+                                                <em class="event-name">{{ event.course_name.name }}</em>
+                                            </a>
+                                        </li>
+                                    {% elif event.start_time|date:"D" == key %}
+                                        <li class="single-event" data-start="{{ event.start_time|time:"H:i" }}"
+                                            data-end="24:00"
+                                            data-content="event-abs-circuit"
+                                            data-event="{{ event.course_name.name|space_to_dash }}">
+                                            <a href="#0">
+                                                <em class="event-name">{{ event.course_name.name }}</em>
+                                            </a>
+                                        </li>
+                                    {% elif event.end_time|date:"D" == key %}
+                                        <li class="single-event" data-start="00:00"
+                                            data-end="{{ event.end_time|time:"H:i" }}"
+                                            data-content="event-abs-circuit"
+                                            data-event="{{ event.course_name.name|space_to_dash }}">
+                                            <a href="#0">
+                                                <em class="event-name">{{ event.course_name.name }}</em>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </li>
+            {% endfor %}
+
+        </ul>
+    </div>
+
+    <div class="event-modal">
+        <header class="header">
+            <div class="content">
+                <span class="event-date"></span>
+                <h3 class="event-name"></h3>
+            </div>
+
+            <div class="header-bg"></div>
+        </header>
+
+        <div class="body">
+            <div class="event-info"></div>
+            <div class="body-bg"></div>
+        </div>
+
+        <a href="#0" class="close">Close</a>
+    </div>
+
+    <div class="cover-layer"></div>
+</div> <!-- .cd-schedule -->
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6">
+            <ul class="list-group">
+                {% if statistics %}
+                    {% for course, stat in statistics.items %}
+                        <li class="list-group-item">
+                            <span class="badge">{{ stat.0 }}</span>
+                            {{ course }}
+                        </li>
+                    {% endfor %}
+                    <li class="list-group-item active">
+                        <span class="badge">{{ total_stats }}</span>
+                        Total time
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    {% if total_stats|hour_to_min != 0 %}
+                        <canvas id="myChart"></canvas>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src={% static "js/modernizr.js" %}></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+<script>
+    if (!window.jQuery) document.write('<script src="js/jquery-3.0.0.min.js"><\/script>');
+</script>
+<script src={% static "js/main.js" %}></script> <!-- Resource jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'pie',
+
+            // The data for our dataset
+            data: {
+                labels: [
+                    {% for course, hour in statistics.items %}
+                        "{{ course }}",
+                    {% endfor %}
+                ],
+                datasets:
+                    [{
+                        label: "My First dataset",
+                        backgroundColor: [{% for course, color in statistics.items %}'{{ color.1 }}',{% endfor %}],
+                        borderColor: 'rgb(255, 255, 255)',
+                        data: [
+                            {% for course, hour in statistics.items %}
+                                {{ hour.0|hour_to_min }},
+                            {% endfor %}
+                        ],
+                    }]
+            },
+
+            // Configuration options go here
+            options: {}
+        })
+    ;
+</script>
+</body>
+</html>
