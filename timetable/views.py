@@ -15,7 +15,7 @@ nam_day = {v: k for k, v in day_nam.items()}
 def timetable(request):
     # timezone.activate(pytz.timezone('Canada/Eastern'))
     tz = timezone.get_current_timezone()
-    context = {}
+    context = {'week': 0}
 
     week_days = [["Monday", "Mon"], ["Tuesday", "Tue"], ["Wednesday", "Wed"], ["Thursday", "Thu"], ["Friday", "Fri"],
                  ["Saturday", "Sat"], ["Sunday", "Sun"]]
@@ -63,7 +63,7 @@ def timetable(request):
         context['total_stats'] = timedelta(0)
     if timezone.localtime(max_clock).hour > 24:
         context['clock_range'] = range(timezone.localtime(min_clock).hour, 25)
-    elif timezone.localtime(max_clock).hour >= timezone.localtime(min_clock).hour :
+    elif timezone.localtime(max_clock).hour >= timezone.localtime(min_clock).hour:
         context['clock_range'] = range(timezone.localtime(min_clock).hour, timezone.localtime(max_clock).hour + 1)
     else:
         context['clock_range'] = range(timezone.localtime(max_clock).hour, timezone.localtime(min_clock).hour + 1)
@@ -72,9 +72,11 @@ def timetable(request):
 
 
 def timetable_past(request, week):
+    if week < 0:
+        week = 0
     tz = timezone.get_current_timezone()
 
-    context = {}
+    context = {'week': week}
 
     week_days = [["Monday", "Mon"], ["Tuesday", "Tue"], ["Wednesday", "Wed"], ["Thursday", "Thu"], ["Friday", "Fri"],
                  ["Saturday", "Sat"], ["Sunday", "Sun"]]
@@ -128,6 +130,8 @@ def timetable_past(request, week):
         context['total_stats'] = timedelta(0)
     if timezone.localtime(max_clock).hour > 24:
         context['clock_range'] = range(timezone.localtime(min_clock).hour, 25)
+    elif timezone.localtime(max_clock).hour >= timezone.localtime(min_clock).hour:
+        context['clock_range'] = range(timezone.localtime(min_clock).hour, timezone.localtime(max_clock).hour + 1)
     else:
         context['clock_range'] = range(timezone.localtime(max_clock).hour, timezone.localtime(min_clock).hour + 1)
     context['table_height'] = 100 * (context['clock_range'][-1] - context['clock_range'][0] + 1)

@@ -149,7 +149,21 @@
         <a href="/admin/timetable/studyhour/add/" type="button" class="btn btn-primary btn-lg btn-block">Add Time</a>
         <a href="/admin/timetable/course/add/" type="button" class="btn btn-secondary btn-lg btn-block">Add Course</a>
     {% endif %}
+    <div class="row" style="text-align: center">
 
+
+        <ul class="pagination pagination-lg justify-content-center">
+            <li class="page-item">
+                <a class="page-link" href="/week/{{ week|add:1 }}"><</a>
+            </li>
+            <li class="page-item disabled">
+                <a class="page-link" href="/week/0">{{ week }}</a>
+            </li>
+            <li class="page-item {% if week == 0 %} disabled{% endif %}">
+                <a class="page-link" href="/week/{% if week == 0 %}0{% else %}{{ week|add:-1 }}{% endif %}">></a>
+            </li>
+        </ul>
+    </div>
     <div class="event-modal">
         <header class="header">
             <div class="content">
