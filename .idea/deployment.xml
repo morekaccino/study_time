@@ -5,7 +5,7 @@
       <paths name="PythonAnywhere">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/mowhamadrexa/Study" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
