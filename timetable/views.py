@@ -63,6 +63,8 @@ def timetable(request):
         context['total_stats'] = timedelta(0)
     if timezone.localtime(max_clock).hour > 24:
         context['clock_range'] = range(timezone.localtime(min_clock).hour, 25)
+    elif timezone.localtime(max_clock).hour >= timezone.localtime(min_clock).hour :
+        context['clock_range'] = range(timezone.localtime(min_clock).hour, timezone.localtime(max_clock).hour + 1)
     else:
         context['clock_range'] = range(timezone.localtime(max_clock).hour, timezone.localtime(min_clock).hour + 1)
     context['table_height'] = 100 * (context['clock_range'][-1] - context['clock_range'][0] + 1)

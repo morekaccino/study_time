@@ -62,11 +62,12 @@
 <body>
 
 <div class="container" style="padding-top: 50px">
-    <ul class="nav nav-pills">
-        <li role="presentation" class="disabled"><a href="/">Time-table</a></li>
-        <li role="presentation" class=""><a href="/admin/timetable/studyhour/add/">Add Time</a></li>
-        <li role="presentation" class=""><a href="/admin/timetable/course/add/">Add course</a></li>
-    </ul>
+    {% if events %}
+        <ul class="nav nav-pills">
+            <li role="presentation" class=""><a href="/admin/timetable/studyhour/add/">Add Time</a></li>
+            <li role="presentation" class=""><a href="/admin/timetable/course/add/">Add course</a></li>
+        </ul>
+    {% endif %}
     {#<div class="justify-content-center align-items-center">#}
     {#    {% if from_date and to_date %}#}
     {#        <h4>{{ from_date|date:"m-d" }}  to  {{ to_date|date:"m-d" }}</h4>#}
@@ -77,67 +78,77 @@
 
 
 <div class="cd-schedule loading">
-    <div class="timeline">
-        <ul>
-            {% for clock in clock_range %}
-                {% if clock != 24 %}
-                    <li><span>{{ clock }} : 00</span></li>
-                    <li><span>{{ clock }} : 30</span></li>
-                {% else %}
-                    <li><span>{{ clock }} : 00</span></li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </div> <!-- .timeline -->
 
-    <div class="events">
-        <ul>
-            {% for day, key in week_days %}
-                <li class="events-group">
-                    <div class="top-info"><span>{{ day }}</span></div>
+    {% if events %}
+        <div class="timeline">
+            <ul>
+                {% for clock in clock_range %}
+                    {% if clock != 24 %}
+                        <li><span>{{ clock }} : 00</span></li>
+                        <li><span>{{ clock }} : 30</span></li>
+                    {% else %}
+                        <li><span>{{ clock }} : 00</span></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div> <!-- .timeline -->
 
-                    <ul>
-                        {% if events %}
-                            {% for event in events %}
-                                {% if event.start_time|date:"D" == key or event.end_time|date:"D" == key %}
-                                    {% if event.start_time|date:"Y-m-d" == event.end_time|date:"Y-m-d" %}
-                                        <li class="single-event" data-start="{{ event.start_time|time:"H:i" }}"
-                                            data-end="{{ event.end_time|time:"H:i" }}"
-                                            data-content="event-abs-circuit"
-                                            data-event="{{ event.course_name.name|space_to_dash }}">
-                                            <a href="#0">
-                                                <em class="event-name">{{ event.course_name.name }}</em>
-                                            </a>
-                                        </li>
-                                    {% elif event.start_time|date:"D" == key %}
-                                        <li class="single-event" data-start="{{ event.start_time|time:"H:i" }}"
-                                            data-end="24:00"
-                                            data-content="event-abs-circuit"
-                                            data-event="{{ event.course_name.name|space_to_dash }}">
-                                            <a href="#0">
-                                                <em class="event-name">{{ event.course_name.name }}</em>
-                                            </a>
-                                        </li>
-                                    {% elif event.end_time|date:"D" == key %}
-                                        <li class="single-event" data-start="00:00"
-                                            data-end="{{ event.end_time|time:"H:i" }}"
-                                            data-content="event-abs-circuit"
-                                            data-event="{{ event.course_name.name|space_to_dash }}">
-                                            <a href="#0">
-                                                <em class="event-name">{{ event.course_name.name }}</em>
-                                            </a>
-                                        </li>
+
+        <div class="events">
+            <ul>
+                {% for day, key in week_days %}
+                    <li class="events-group">
+                        <div class="top-info"><span>{{ day }}</span></div>
+
+                        <ul>
+                            {% if events %}
+                                {% for event in events %}
+                                    {% if event.start_time|date:"D" == key or event.end_time|date:"D" == key %}
+                                        {% if event.start_time|date:"Y-m-d" == event.end_time|date:"Y-m-d" %}
+                                            <li class="single-event" data-start="{{ event.start_time|time:"H:i" }}"
+                                                data-end="{{ event.end_time|time:"H:i" }}"
+                                                data-content="event-abs-circuit"
+                                                data-event="{{ event.course_name.name|space_to_dash }}">
+                                                <a href="#0">
+                                                    <em class="event-name">{{ event.course_name.name }}</em>
+                                                </a>
+                                            </li>
+                                        {% elif event.start_time|date:"D" == key %}
+                                            <li class="single-event" data-start="{{ event.start_time|time:"H:i" }}"
+                                                data-end="24:00"
+                                                data-content="event-abs-circuit"
+                                                data-event="{{ event.course_name.name|space_to_dash }}">
+                                                <a href="#0">
+                                                    <em class="event-name">{{ event.course_name.name }}</em>
+                                                </a>
+                                            </li>
+                                        {% elif event.end_time|date:"D" == key %}
+                                            <li class="single-event" data-start="00:00"
+                                                data-end="{{ event.end_time|time:"H:i" }}"
+                                                data-content="event-abs-circuit"
+                                                data-event="{{ event.course_name.name|space_to_dash }}">
+                                                <a href="#0">
+                                                    <em class="event-name">{{ event.course_name.name }}</em>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+
                                     {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% endfor %}
 
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    </ul>
-                </li>
-            {% endfor %}
-
-        </ul>
-    </div>
+            </ul>
+        </div>
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            This week is empty! Try adding some records...
+        </div>
+        <a href="/admin/timetable/studyhour/add/" type="button" class="btn btn-primary btn-lg btn-block">Add Time</a>
+        <a href="/admin/timetable/course/add/" type="button" class="btn btn-secondary btn-lg btn-block">Add Course</a>
+    {% endif %}
 
     <div class="event-modal">
         <header class="header">
