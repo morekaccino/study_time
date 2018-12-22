@@ -13,7 +13,8 @@ nam_day = {v: k for k, v in day_nam.items()}
 
 # Create your views here.
 def timetable(request):
-    # timezone.activate(pytz.timezone('America/Toronto'))
+    # timezone.activate(pytz.timezone('Canada/Eastern'))
+    tz = timezone.get_current_timezone()
     context = {}
 
     week_days = [["Monday", "Mon"], ["Tuesday", "Tue"], ["Wednesday", "Wed"], ["Thursday", "Thu"], ["Friday", "Fri"],
@@ -22,12 +23,13 @@ def timetable(request):
     courses = Course.objects.all()
     context['courses'] = courses
 
-    now_weekday = timezone.now().isoweekday() - 1
-    begin_of_week = timezone.now() - timedelta(days=now_weekday)
-    begin_of_week = begin_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+    now_canada = timezone.now().astimezone(tz=tz)
+    now_weekday = now_canada.isoweekday()
+    begin_of_week = now_canada - timedelta(days=now_weekday)
+    begin_of_week = begin_of_week.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
     last_of_week = begin_of_week + timedelta(days=7)
-    last_of_week = last_of_week.replace(hour=23, minute=59, second=59)
-    query = StudyHour.objects.filter(start_time__gt=begin_of_week)
+    last_of_week = last_of_week.replace(hour=23, minute=59, second=59, tzinfo=tz)
+    query = StudyHour.objects.filter(start_time__gt=begin_of_week.astimezone(pytz.UTC))
     context['events'] = query
 
     context['from_date'] = begin_of_week
