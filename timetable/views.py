@@ -24,10 +24,10 @@ def timetable(request):
     context['courses'] = courses
 
     now_canada = timezone.now().astimezone(tz=tz)
-    now_weekday = now_canada.isoweekday()
+    now_weekday = now_canada.isoweekday() - 1
     begin_of_week = now_canada - timedelta(days=now_weekday)
     begin_of_week = begin_of_week.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
-    last_of_week = begin_of_week + timedelta(days=7)
+    last_of_week = begin_of_week + timedelta(days=6)
     last_of_week = last_of_week.replace(hour=23, minute=59, second=59, tzinfo=tz)
     query = StudyHour.objects.filter(start_time__gt=begin_of_week.astimezone(pytz.UTC))
     context['events'] = query
@@ -64,12 +64,14 @@ def timetable(request):
     if timezone.localtime(max_clock).hour > 24:
         context['clock_range'] = range(timezone.localtime(min_clock).hour, 25)
     else:
-        context['clock_range'] = range(timezone.localtime(min_clock).hour, timezone.localtime(max_clock).hour + 2)
+        context['clock_range'] = range(timezone.localtime(max_clock).hour, timezone.localtime(min_clock).hour + 1)
     context['table_height'] = 100 * (context['clock_range'][-1] - context['clock_range'][0] + 1)
     return render(request, template_name='timetable/base.html', context=context)
 
 
 def timetable_past(request, week):
+    tz = timezone.get_current_timezone()
+
     context = {}
 
     week_days = [["Monday", "Mon"], ["Tuesday", "Tue"], ["Wednesday", "Wed"], ["Thursday", "Thu"], ["Friday", "Fri"],
@@ -82,13 +84,15 @@ def timetable_past(request, week):
     courses = Course.objects.all()
     context['courses'] = courses
 
-    now_weekday = timezone.now().isoweekday() - 1
-
-    begin_of_week = (timezone.now() - timedelta(days=now_weekday)) - week * timedelta(
+    now_canada = timezone.now().astimezone(tz=tz)
+    now_weekday = now_canada.isoweekday() - 1
+    begin_of_week = (now_canada - timedelta(days=now_weekday)) - week * timedelta(
         days=7)
-    begin_of_week = begin_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
-    last_of_week = begin_of_week + timedelta(days=7)
-    query = StudyHour.objects.filter(Q(start_time__gte=begin_of_week) & Q(end_time__lte=last_of_week))
+    begin_of_week = begin_of_week.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
+    last_of_week = begin_of_week + timedelta(days=6)
+    last_of_week = last_of_week.replace(hour=23, minute=59, second=59, tzinfo=tz)
+    query = StudyHour.objects.filter(
+        Q(start_time__gte=begin_of_week.astimezone(pytz.UTC)) & Q(end_time__lte=last_of_week.astimezone(pytz.UTC)))
     context['events'] = query
 
     context['from_date'] = begin_of_week
@@ -123,7 +127,6 @@ def timetable_past(request, week):
     if timezone.localtime(max_clock).hour > 24:
         context['clock_range'] = range(timezone.localtime(min_clock).hour, 25)
     else:
-        context['clock_range'] = range(timezone.localtime(min_clock).hour, timezone.localtime(max_clock).hour + 2)
-    print(context['clock_range'][0], context['clock_range'][-1])
+        context['clock_range'] = range(timezone.localtime(max_clock).hour, timezone.localtime(min_clock).hour + 1)
     context['table_height'] = 100 * (context['clock_range'][-1] - context['clock_range'][0] + 1)
     return render(request, template_name='timetable/base.html', context=context)
